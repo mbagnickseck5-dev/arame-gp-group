@@ -5,7 +5,11 @@ import { Flag, Logo } from '../components/ui'
 import {
   COUNTRY_CODES,
   COUNTRY_NAMES,
+  CURRENCIES,
+  DEFAULT_CURRENCY,
   formatDate,
+  formatPrice,
+  type Currency,
   todayISO,
   type CountryCode,
   type Departure,
@@ -139,7 +143,7 @@ function DepartureForm({ initial, onCancel, onSave }: { initial: DepartureInput;
     setBusy(true)
     setError('')
     try {
-      await onSave({ ...d, kilos: d.type === 'voyage' ? undefined : d.kilos, date: noDate ? null : d.date, status: noDate && d.status === 'ouvert' ? 'bientot' : d.status })
+      await onSave({ ...d, pricePerKg: d.type === 'voyage' ? undefined : d.pricePerKg, currency: d.type === 'voyage' || !d.pricePerKg ? undefined : (d.currency ?? DEFAULT_CURRENCY[d.from]), date: noDate ? null : d.date, status: noDate && d.status === 'ouvert' ? 'bientot' : d.status })
     } catch (err) {
       setError((err as Error).message)
       setBusy(false)
@@ -186,21 +190,32 @@ function DepartureForm({ initial, onCancel, onSave }: { initial: DepartureInput;
             <Segmented value={d.status} onChange={(v) => set('status', v)} options={[{ v: 'ouvert', label: 'Ouvert' }, { v: 'complet', label: 'Complet' }, { v: 'bientot', label: 'Bientôt' }]} />
           </Block>
           {d.type !== 'voyage' && (
-            <Block label="Kilos disponibles (facultatif)">
-              <div className="relative">
+            <Block label="Prix du kilo (facultatif)">
+              <div className="flex gap-2">
                 <input
                   type="number"
-                  inputMode="numeric"
+                  inputMode="decimal"
                   min={0}
-                  step={1}
-                  value={d.kilos ?? ''}
-                  onChange={(e) => set('kilos', e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)))}
-                  placeholder="Ex. 150"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-14 text-[16px] outline-none focus:border-royal-600"
+                  step="any"
+                  value={d.pricePerKg ?? ''}
+                  onChange={(e) => set('pricePerKg', e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)))}
+                  placeholder="Ex. 5000"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-3 text-[16px] outline-none focus:border-royal-600"
                 />
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">kg</span>
+                <select
+                  value={d.currency ?? DEFAULT_CURRENCY[d.from]}
+                  onChange={(e) => set('currency', e.target.value as Currency)}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-[15px] font-semibold text-navy-900 outline-none focus:border-royal-600"
+                  aria-label="Devise"
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
-              <p className="mt-1.5 text-xs text-slate-500">Affiché sur le site : « 150 kg disponibles ». Mettez 0 quand il n’y a plus de place.</p>
+              <p className="mt-1.5 text-xs text-slate-500">
+                Affiché sur le site : « {d.pricePerKg ? formatPrice(d.pricePerKg, d.currency ?? DEFAULT_CURRENCY[d.from]) : formatPrice(5000, d.currency ?? DEFAULT_CURRENCY[d.from])} ». Laissez vide pour ne pas afficher de prix.
+              </p>
             </Block>
           )}
           <Block label="Remarque (facultatif)">
@@ -232,7 +247,7 @@ function Row({ dep, past, onEdit, onDelete }: { dep: Departure; past?: boolean; 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
             <span className={`rounded-full px-2.5 py-1 font-semibold ring-1 ${S.cls}`}>{S.label}</span>
             <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{TYPE_LABEL[dep.type].label}</span>
-            {dep.kilos !== undefined && dep.type !== 'voyage' && <span className="rounded-full bg-brand-soft px-2.5 py-1 font-semibold text-brand-orange2">{dep.kilos} kg dispo</span>}
+            {dep.pricePerKg !== undefined && dep.currency && dep.type !== 'voyage' && <span className="rounded-full bg-brand-soft px-2.5 py-1 font-semibold text-brand-orange2">{formatPrice(dep.pricePerKg, dep.currency)}</span>}
             {past && <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-500">Passé · masqué du site</span>}
           </div>
           {dep.note && <p className="mt-2 text-[13px] text-slate-500">{dep.note}</p>}

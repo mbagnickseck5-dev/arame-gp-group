@@ -2,7 +2,7 @@ import { ArrowUpRight, BellRing, CalendarClock, CalendarDays, Package, PlaneTake
 import { Flag, Reveal, SectionTitle, SmartImage, WhatsAppIcon } from '../components/ui'
 import { useEffect, useState } from 'react'
 import { DEPARTURES_API, DESTINATIONS, PARCEL_IMAGE } from '../config/site'
-import { formatDate, publicList, type Departure } from '../shared/departures'
+import { formatDate, formatPrice, publicList, type Departure } from '../shared/departures'
 import { STATUS, TYPE_LABEL } from '../lib/departureLabels'
 import { MSG, countryName, waLink } from '../lib/whatsapp'
 
@@ -169,9 +169,9 @@ function DepartureCard({ dep }: { dep: Departure }) {
           <span className="inline-flex items-center gap-1.5 rounded-full bg-royal-50 px-3 py-1.5 text-royal-600">
             <T.icon className="h-3.5 w-3.5" /> {T.label}
           </span>
-          {dep.kilos !== undefined && dep.type !== 'voyage' && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-brand-orange2">
-              <Weight className="h-3.5 w-3.5" /> {dep.kilos === 0 ? 'Plus de place' : `${dep.kilos.toLocaleString('fr-FR')} kg disponibles`}
+          {dep.pricePerKg !== undefined && dep.currency && dep.type !== 'voyage' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 font-semibold text-brand-orange2">
+              <Weight className="h-3.5 w-3.5" /> {formatPrice(dep.pricePerKg, dep.currency)}
             </span>
           )}
         </div>

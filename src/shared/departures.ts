@@ -13,6 +13,15 @@ export const COUNTRY_NAMES: Record<CountryCode, string> = {
 export const DEPARTURE_TYPES = ['voyage', 'colis', 'mixte'] as const
 export const DEPARTURE_STATUSES = ['ouvert', 'complet', 'bientot'] as const
 
+export const CURRENCIES = ['FCFA', 'DH', 'AED', 'EUR'] as const
+export type Currency = (typeof CURRENCIES)[number]
+
+/** Devise proposée par défaut selon le pays de départ */
+export const DEFAULT_CURRENCY: Record<CountryCode, Currency> = { SN: 'FCFA', CI: 'FCFA', MA: 'DH', AE: 'AED' }
+
+/** Ex. 5000, 'FCFA' → '5 000 FCFA / kg' */
+export const formatPrice = (amount: number, currency: Currency) => `${amount.toLocaleString('fr-FR')} ${currency} / kg`
+
 export interface Departure {
   id: string
   from: CountryCode
@@ -21,8 +30,9 @@ export interface Departure {
   /** Date au format AAAA-MM-JJ, ou null = « Date à annoncer » */
   date: string | null
   status: (typeof DEPARTURE_STATUSES)[number]
-  /** Kilos disponibles (GP), facultatif */
-  kilos?: number
+  /** Prix du kilo pour les colis, facultatif */
+  pricePerKg?: number
+  currency?: Currency
   note?: string
 }
 
@@ -46,14 +56,15 @@ export function validateDeparture(raw: unknown): { ok: true; value: DepartureInp
       return { ok: false, error: 'Date invalide.' }
     date = r.date
   }
-  let kilos: number | undefined
-  if (r.kilos !== undefined && r.kilos !== null && r.kilos !== '') {
-    const k = Number(r.kilos)
-    if (!Number.isFinite(k) || k < 0 || k > 100000) return { ok: false, error: 'Nombre de kilos invalide.' }
-    kilos = Math.round(k)
+  let price: { pricePerKg: number; currency: Currency } | undefined
+  if (r.pricePerKg !== undefined && r.pricePerKg !== null && r.pricePerKg !== '') {
+    const k = Number(r.pricePerKg)
+    if (!Number.isFinite(k) || k <= 0 || k > 10_000_000) return { ok: false, error: 'Prix au kilo invalide.' }
+    const currency = (CURRENCIES as readonly string[]).includes(r.currency as string) ? (r.currency as Currency) : DEFAULT_CURRENCY[from]
+    price = { pricePerKg: Math.round(k * 100) / 100, currency }
   }
   const note = typeof r.note === 'string' ? r.note.trim().slice(0, 140) : ''
-  return { ok: true, value: { from, to, type, date, status, ...(kilos !== undefined ? { kilos } : {}), ...(note ? { note } : {}) } }
+  return { ok: true, value: { from, to, type, date, status, ...(price && type !== 'voyage' ? price : {}), ...(note ? { note } : {}) } }
 }
 
 /** Ex. '2026-12-15' → 'Mardi 15 décembre 2026' */

@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, BellRing, CalendarClock, CalendarDays, Package, PlaneTakeoff, Route, Truck } from 'lucide-react'
+import { ArrowUpRight, BellRing, CalendarClock, CalendarDays, Package, PlaneTakeoff, Route, Truck, Weight } from 'lucide-react'
 import { Flag, Reveal, SectionTitle, SmartImage, WhatsAppIcon } from '../components/ui'
 import { useEffect, useState } from 'react'
 import { DEPARTURES_API, DESTINATIONS, PARCEL_IMAGE } from '../config/site'
@@ -9,7 +9,7 @@ import { MSG, countryName, waLink } from '../lib/whatsapp'
 /* ============ DESTINATIONS ============ */
 export function Destinations() {
   return (
-    <section id="destinations" className="section bg-slate-50">
+    <section id="destinations" className="section bg-white">
       <div className="container-x">
         <SectionTitle
           eyebrow="Nos destinations"
@@ -59,7 +59,7 @@ const SERVICES = [
 
 export function Services() {
   return (
-    <section id="services" className="section relative overflow-hidden bg-white">
+    <section id="services" className="section relative overflow-hidden bg-slate-50">
       <div className="container-x grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
         <Reveal className="relative order-2 lg:order-1">
           <div className="relative">
@@ -131,57 +131,67 @@ function useDepartures() {
   return list
 }
 
+const DEST_IMAGE = Object.fromEntries(DESTINATIONS.map((d) => [d.code, d.image])) as Record<string, string>
+
 function DepartureCard({ dep }: { dep: Departure }) {
   const T = TYPE_LABEL[dep.type]
   const S = STATUS[dep.status]
   const from = countryName(dep.from)
   const to = countryName(dep.to)
   const dateLabel = formatDate(dep.date)
+  const full = dep.status === 'complet'
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
-      <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[64px] bg-royal-50" />
-      <span className={`relative inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 ${S.cls}`}>
-        <span className="h-1.5 w-1.5 rounded-full bg-current" /> {S.label}
-      </span>
-      <div className="relative mt-6 flex items-center justify-between gap-2">
-        <div className="flex flex-col items-center gap-2">
-          <Flag code={dep.from} className="h-7 w-10" />
-          <span className="text-[13px] font-semibold text-navy-900">{from}</span>
-        </div>
-        <div className="relative flex flex-1 items-center">
-          <span className="h-px flex-1 border-t-2 border-dashed border-royal-500/30" />
-          <PlaneTakeoff className="mx-1 h-5 w-5 text-royal-600" />
-          <span className="h-px flex-1 border-t-2 border-dashed border-royal-500/30" />
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Flag code={dep.to} className="h-7 w-10" />
-          <span className="text-[13px] font-semibold text-navy-900">{to}</span>
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1 hover:shadow-lift">
+      {/* photo du pays de destination */}
+      <div className="relative">
+        <SmartImage src={DEST_IMAGE[dep.to]} alt={`Départ vers ${to}`} art={dep.to} className={`aspect-[16/10] transition-transform duration-700 group-hover:scale-105 ${full ? 'grayscale-[40%]' : ''}`} />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/20 to-transparent" />
+        <span className={`absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-semibold ring-1 ${S.cls}`}>
+          <span className="h-1.5 w-1.5 rounded-full bg-current" /> {S.label}
+        </span>
+        <div className="absolute inset-x-4 bottom-4 flex items-center gap-2 text-white">
+          <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold"><Flag code={dep.from} className="h-4 w-6" /> {from}</span>
+          <span className="flex flex-1 items-center">
+            <span className="h-px flex-1 border-t border-dashed border-white/60" />
+            <PlaneTakeoff className="mx-1 h-4 w-4 text-brand-orange" />
+            <span className="h-px flex-1 border-t border-dashed border-white/60" />
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold">{to} <Flag code={dep.to} className="h-4 w-6" /></span>
         </div>
       </div>
-      <div className="mt-6 space-y-2.5 border-t border-slate-100 pt-5 text-[14px]">
-        <div className="flex items-center gap-2.5 text-slate-600">
-          <CalendarDays className="h-4 w-4 shrink-0 text-brand-orange" />
-          <span className="font-medium text-navy-900">{dateLabel ?? 'Date à annoncer'}</span>
+
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-center gap-2.5 text-[15px]">
+          <CalendarDays className="h-[18px] w-[18px] shrink-0 text-brand-orange" />
+          <span className="font-semibold text-navy-900">{dateLabel ?? 'Date à annoncer'}</span>
         </div>
-        <div className="flex items-center gap-2.5 text-slate-600">
-          <T.icon className="h-4 w-4 shrink-0 text-brand-orange" /> {T.label}
+        <div className="mt-3 flex flex-wrap gap-2 text-[12px] font-medium">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-royal-50 px-3 py-1.5 text-royal-600">
+            <T.icon className="h-3.5 w-3.5" /> {T.label}
+          </span>
+          {dep.kilos !== undefined && dep.type !== 'voyage' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-brand-orange2">
+              <Weight className="h-3.5 w-3.5" /> {dep.kilos === 0 ? 'Plus de place' : `${dep.kilos.toLocaleString('fr-FR')} kg disponibles`}
+            </span>
+          )}
         </div>
-        {dep.note && <p className="text-[13px] leading-snug text-slate-500">{dep.note}</p>}
+        {dep.note && <p className="mt-3 text-[13px] leading-snug text-slate-500">{dep.note}</p>}
+        <div className="flex-1" />
+        {full ? (
+          <a href={waLink(MSG.departure(from, to, dateLabel))} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-200">
+            Être informé du prochain départ
+          </a>
+        ) : (
+          <a
+            href={waLink(MSG.departure(from, to, dateLabel))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-wa px-4 py-3 text-[13px] font-semibold text-white shadow-wa transition hover:-translate-y-0.5 hover:bg-wa-dark"
+          >
+            <WhatsAppIcon className="h-4 w-4" /> {dep.date ? 'Réserver ce départ' : 'Être informé du départ'}
+          </a>
+        )}
       </div>
-      {dep.status === 'complet' ? (
-        <a href={waLink(MSG.departure(from, to, dateLabel))} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-200">
-          Être informé du prochain départ
-        </a>
-      ) : (
-        <a
-          href={waLink(MSG.departure(from, to, dateLabel))}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-6 inline-flex items-center justify-center gap-2 rounded-full border border-royal-600/20 px-4 py-3 text-[13px] font-semibold text-royal-600 transition hover:border-wa hover:bg-wa hover:text-white"
-        >
-          {dep.date ? 'Réserver ce départ' : 'Être informé du départ'} <ArrowRight className="h-4 w-4" />
-        </a>
-      )}
     </article>
   )
 }

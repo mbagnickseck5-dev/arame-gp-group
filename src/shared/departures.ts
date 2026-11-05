@@ -21,6 +21,8 @@ export interface Departure {
   /** Date au format AAAA-MM-JJ, ou null = « Date à annoncer » */
   date: string | null
   status: (typeof DEPARTURE_STATUSES)[number]
+  /** Kilos disponibles (GP), facultatif */
+  kilos?: number
   note?: string
 }
 
@@ -44,8 +46,14 @@ export function validateDeparture(raw: unknown): { ok: true; value: DepartureInp
       return { ok: false, error: 'Date invalide.' }
     date = r.date
   }
+  let kilos: number | undefined
+  if (r.kilos !== undefined && r.kilos !== null && r.kilos !== '') {
+    const k = Number(r.kilos)
+    if (!Number.isFinite(k) || k < 0 || k > 100000) return { ok: false, error: 'Nombre de kilos invalide.' }
+    kilos = Math.round(k)
+  }
   const note = typeof r.note === 'string' ? r.note.trim().slice(0, 140) : ''
-  return { ok: true, value: { from, to, type, date, status, ...(note ? { note } : {}) } }
+  return { ok: true, value: { from, to, type, date, status, ...(kilos !== undefined ? { kilos } : {}), ...(note ? { note } : {}) } }
 }
 
 /** Ex. '2026-12-15' → 'Mardi 15 décembre 2026' */

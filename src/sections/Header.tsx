@@ -5,9 +5,9 @@ import { Logo, WhatsAppIcon } from '../components/ui'
 import { MSG, waLink } from '../lib/whatsapp'
 
 export const NAV = [
+  { href: '#departs', label: 'Départs' },
   { href: '#destinations', label: 'Destinations' },
   { href: '#services', label: 'Services' },
-  { href: '#departs', label: 'Départs' },
   { href: '#demande', label: 'Demande' },
   { href: '#contact', label: 'Contact' },
   { href: '#faq', label: 'FAQ' },

@@ -11,9 +11,9 @@ export default function App() {
       <Header />
       <main>
         <Hero />
+        <Departures />
         <Destinations />
         <Services />
-        <Departures />
         <RequestFunnel />
         <WhyUs />
         <Contacts />

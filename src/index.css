@@ -13,7 +13,15 @@
   .container-x { @apply mx-auto w-full max-w-7xl px-5 sm:px-8; }
   .section { @apply py-20 md:py-28; }
 }
+/* Défilement continu des destinations */
+@keyframes marquee { from { transform: translate3d(-50%, 0, 0); } to { transform: translate3d(0, 0, 0); } } /* gauche → droite */
+.marquee-track { animation: marquee 38s linear infinite; will-change: transform; }
+.marquee:hover .marquee-track, .marquee[data-paused='true'] .marquee-track { animation-play-state: paused; }
+@media (max-width: 640px) { .marquee-track { animation-duration: 28s; } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .marquee { overflow-x: auto; }
+  .marquee-track { animation: none; }
   .animate-ping { animation: none; }
 }

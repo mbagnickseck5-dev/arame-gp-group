@@ -7,9 +7,42 @@ import { STATUS, TYPE_LABEL } from '../lib/departureLabels'
 import { MSG, countryName, waLink } from '../lib/whatsapp'
 
 /* ============ DESTINATIONS ============ */
-export function Destinations() {
+function DestinationCard({ d, hidden }: { d: (typeof DESTINATIONS)[number]; hidden?: boolean }) {
   return (
-    <section id="destinations" className="section bg-white">
+    <article
+      aria-hidden={hidden || undefined}
+      className="group flex w-[260px] shrink-0 flex-col overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-lift sm:w-[290px]"
+    >
+      <div className="relative">
+        <SmartImage src={d.image} alt={hidden ? '' : `Voyage et colis vers ${d.name}`} art={d.code} className="aspect-[4/3.4] transition-transform duration-700 group-hover:scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 to-transparent" />
+        <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[13px] font-semibold text-navy-900 shadow">
+          <Flag code={d.code} /> {d.name}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col p-5">
+        <div className="text-xs font-medium uppercase tracking-wider text-royal-600">{d.city}</div>
+        <p className="mt-2 flex-1 text-[14px] leading-relaxed text-slate-600">{d.blurb}</p>
+        <a
+          href={waLink(MSG.destination(d.name))}
+          target="_blank"
+          rel="noopener noreferrer"
+          tabIndex={hidden ? -1 : undefined}
+          className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-navy-900 px-4 py-3 text-[13px] font-semibold leading-tight text-white transition group-hover:bg-wa"
+        >
+          <WhatsAppIcon className="h-4 w-4" /> Demander des informations
+        </a>
+      </div>
+    </article>
+  )
+}
+
+export function Destinations() {
+  const [paused, setPaused] = useState(false)
+  // La liste est répétée pour un défilement continu sans saut (l'animation se déplace de la moitié de la piste).
+  const loop = [...DESTINATIONS, ...DESTINATIONS, ...DESTINATIONS, ...DESTINATIONS]
+  return (
+    <section id="destinations" className="section overflow-hidden bg-white">
       <div className="container-x">
         <SectionTitle
           eyebrow="Nos destinations"
@@ -17,34 +50,24 @@ export function Destinations() {
           accent="principales lignes"
           sub="Voyages et envois de colis entre le Sénégal, le Maroc, la Côte d’Ivoire et Dubaï."
         />
-        <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden">
-          {DESTINATIONS.map((d, i) => (
-            <Reveal key={d.code} i={i} className="w-[78%] shrink-0 snap-center sm:w-auto">
-              <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-lift">
-                <div className="relative">
-                  <SmartImage src={d.image} alt={`Voyage et colis vers ${d.name}`} art={d.code} className="aspect-[4/3.4] transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 to-transparent" />
-                  <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[13px] font-semibold text-navy-900 shadow">
-                    <Flag code={d.code} /> {d.name}
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="text-xs font-medium uppercase tracking-wider text-royal-600">{d.city}</div>
-                  <p className="mt-2 flex-1 text-[14px] leading-relaxed text-slate-600">{d.blurb}</p>
-                  <a
-                    href={waLink(MSG.destination(d.name))}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-navy-900 px-4 py-3 text-[13px] font-semibold leading-tight text-white transition group-hover:bg-wa"
-                  >
-                    <WhatsAppIcon className="h-4 w-4" /> Demander des informations
-                  </a>
-                </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
       </div>
+      <Reveal>
+        <div
+          className="marquee [mask-image:linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)]"
+          data-paused={paused}
+          onTouchStart={() => setPaused(true)}
+          onTouchEnd={() => setPaused(false)}
+          onTouchCancel={() => setPaused(false)}
+          onFocusCapture={() => setPaused(true)}
+          onBlurCapture={() => setPaused(false)}
+        >
+          <div className="marquee-track flex w-max gap-4 py-3 sm:gap-6">
+            {loop.map((d, i) => (
+              <DestinationCard key={i} d={d} hidden={i >= DESTINATIONS.length} />
+            ))}
+          </div>
+        </div>
+      </Reveal>
     </section>
   )
 }

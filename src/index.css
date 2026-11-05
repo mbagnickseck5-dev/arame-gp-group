@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-white font-sans text-navy-900 antialiased; text-rendering: optimizeLegibility; }
+  section[id] { scroll-margin-top: 84px; }
+  ::selection { background: #F7931E; color: #fff; }
+  :focus-visible { outline: 3px solid #2463E0; outline-offset: 2px; border-radius: 10px; }
+}
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-7xl px-5 sm:px-8; }
+  .section { @apply py-20 md:py-28; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-ping { animation: none; }
+}

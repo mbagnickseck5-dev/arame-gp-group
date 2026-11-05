@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://arame-gp-group.netlify.app/sitemap.xml

@@ -33,7 +33,7 @@ ajouter, modifier, passer en « Complet », supprimer. Les départs passés disp
 
 - **Mot de passe** : à définir dans Netlify → *Site configuration → Environment variables* → `ADMIN_PASSWORD`
   (puis *Deploys → Trigger deploy*). Changer ce mot de passe déconnecte toutes les sessions.
-- **Champs** : trajet, type, date, statut, **prix du kilo** (colis — devise auto selon le pays de départ : FCFA, DH, AED ou EUR), remarque.
+- **Champs** : trajet, type, date, statut, **prix du kilo** (colis — devise auto selon le pays de départ : FCFA, DH, AED ou EUR), **agent à contacter** (nom + WhatsApp : le bouton de la carte ouvre directement son WhatsApp ; vide = numéro principal), remarque.
   La photo de chaque carte est celle du pays de destination.
 - **Stockage** : Netlify Blobs (inclus, aucune base de données à gérer).
 - **Code** : `netlify/functions/departures.mts` (API), `netlify/functions/admin-login.mts` (connexion),

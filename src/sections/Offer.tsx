@@ -2,7 +2,7 @@ import { ArrowUpRight, BellRing, CalendarClock, CalendarDays, Package, PlaneTake
 import { Flag, Reveal, SectionTitle, SmartImage, WhatsAppIcon } from '../components/ui'
 import { useEffect, useState } from 'react'
 import { DEPARTURES_API, DESTINATIONS, PARCEL_IMAGE } from '../config/site'
-import { formatDate, formatPrice, publicList, type Departure } from '../shared/departures'
+import { formatDate, formatPhone, formatPrice, publicList, type Departure } from '../shared/departures'
 import { STATUS, TYPE_LABEL } from '../lib/departureLabels'
 import { MSG, countryName, waLink } from '../lib/whatsapp'
 
@@ -140,6 +140,7 @@ function DepartureCard({ dep }: { dep: Departure }) {
   const to = countryName(dep.to)
   const dateLabel = formatDate(dep.date)
   const full = dep.status === 'complet'
+  const contact = waLink(MSG.departure(from, to, dateLabel), dep.agentPhone || undefined)
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1 hover:shadow-lift">
       {/* photo du pays de destination */}
@@ -176,19 +177,30 @@ function DepartureCard({ dep }: { dep: Departure }) {
           )}
         </div>
         {dep.note && <p className="mt-3 text-[13px] leading-snug text-slate-500">{dep.note}</p>}
+        {dep.agentPhone && (
+          <div className="mt-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-royal-500 to-navy-800 text-[13px] font-bold text-white">
+              {(dep.agentName || 'A').charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0 leading-tight">
+              <div className="truncate text-[13px] font-semibold text-navy-900">{dep.agentName || 'Agent Arame GP'}</div>
+              <div className="text-[12px] text-slate-500">{formatPhone(dep.agentPhone)}</div>
+            </div>
+          </div>
+        )}
         <div className="flex-1" />
         {full ? (
-          <a href={waLink(MSG.departure(from, to, dateLabel))} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-200">
+          <a href={contact} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-200">
             Être informé du prochain départ
           </a>
         ) : (
           <a
-            href={waLink(MSG.departure(from, to, dateLabel))}
+            href={contact}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-wa px-4 py-3 text-[13px] font-semibold text-white shadow-wa transition hover:-translate-y-0.5 hover:bg-wa-dark"
           >
-            <WhatsAppIcon className="h-4 w-4" /> {dep.date ? 'Réserver ce départ' : 'Être informé du départ'}
+            <WhatsAppIcon className="h-4 w-4" /> {dep.agentName ? `Contacter ${dep.agentName}` : dep.date ? 'Réserver ce départ' : 'Être informé du départ'}
           </a>
         )}
       </div>

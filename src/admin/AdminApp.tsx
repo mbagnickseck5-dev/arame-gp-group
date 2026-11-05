@@ -8,7 +8,9 @@ import {
   CURRENCIES,
   DEFAULT_CURRENCY,
   formatDate,
+  formatPhone,
   formatPrice,
+  normalizePhone,
   type Currency,
   todayISO,
   type CountryCode,
@@ -218,6 +220,19 @@ function DepartureForm({ initial, onCancel, onSave }: { initial: DepartureInput;
               </p>
             </Block>
           )}
+          <Block label="Agent à contacter (facultatif)">
+            <div className="space-y-2">
+              <input value={d.agentName ?? ''} maxLength={40} onChange={(e) => set('agentName', e.target.value)} placeholder="Nom de l’agent (ex. Moussa)" autoComplete="off" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-[16px] outline-none focus:border-royal-600" />
+              <input value={d.agentPhone ?? ''} onChange={(e) => set('agentPhone', e.target.value)} placeholder="WhatsApp de l’agent (ex. 77 123 45 67)" inputMode="tel" autoComplete="off" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-[16px] outline-none focus:border-royal-600" />
+            </div>
+            <p className="mt-1.5 text-xs text-slate-500">
+              {d.agentPhone?.trim()
+                ? normalizePhone(d.agentPhone)
+                  ? `Les clients écriront à ${formatPhone(normalizePhone(d.agentPhone)!)} pour ce départ.`
+                  : 'Numéro incomplet : mettez l’indicatif (ex. +221 ou +212).'
+                : 'Laissez vide : les demandes iront sur le WhatsApp principal d’Arame GP Group.'}
+            </p>
+          </Block>
           <Block label="Remarque (facultatif)">
             <input value={d.note ?? ''} maxLength={140} onChange={(e) => set('note', e.target.value)} placeholder="Ex. Dépôt des colis jusqu’au jeudi" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-[16px] outline-none focus:border-royal-600" />
           </Block>
@@ -250,6 +265,11 @@ function Row({ dep, past, onEdit, onDelete }: { dep: Departure; past?: boolean; 
             {dep.pricePerKg !== undefined && dep.currency && dep.type !== 'voyage' && <span className="rounded-full bg-brand-soft px-2.5 py-1 font-semibold text-brand-orange2">{formatPrice(dep.pricePerKg, dep.currency)}</span>}
             {past && <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-500">Passé · masqué du site</span>}
           </div>
+          {dep.agentPhone && (
+            <p className="mt-2 text-[13px] text-slate-600">
+              Agent : <b className="font-semibold text-navy-900">{dep.agentName || '—'}</b> · {formatPhone(dep.agentPhone)}
+            </p>
+          )}
           {dep.note && <p className="mt-2 text-[13px] text-slate-500">{dep.note}</p>}
         </div>
         <div className="flex shrink-0 gap-1.5">
@@ -391,7 +411,7 @@ export default function AdminApp() {
 
       <AnimatePresence>
         {toast && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-28 left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-full bg-navy-900 px-5 py-3 text-sm font-medium text-white shadow-lift">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pointer-events-none fixed inset-x-0 bottom-28 z-[60] mx-auto w-fit whitespace-nowrap rounded-full bg-navy-900 px-5 py-3 text-sm font-medium text-white shadow-lift">
             {toast}
           </motion.div>
         )}

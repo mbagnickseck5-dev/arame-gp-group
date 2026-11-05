@@ -5,7 +5,7 @@ import logoPng from '../assets/logo-arame-gp.png'
 
 /* ---------- Logo (fichier officiel : src/assets/logo-arame-gp.png) ---------- */
 export function Logo({ light = false, className = '' }: { light?: boolean; className?: string }) {
-  const img = <img src={logoPng} alt="Arame GP Group" width={800} height={420} className="h-[52px] w-auto sm:h-[60px]" />
+  const img = <img src={logoPng} alt="Arame GP Group" width={800} height={408} className="h-[52px] w-auto sm:h-[60px]" />
   // Sur fond sombre (footer), le logo est posé sur une pastille blanche pour rester lisible.
   return light ? <span className={`inline-block rounded-2xl bg-white px-4 py-2.5 ${className}`}>{img}</span> : <span className={`inline-block ${className}`}>{img}</span>
 }
